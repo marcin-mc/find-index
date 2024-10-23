@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
-	"github.com/marcin-mc/find-index/internal/server"
+	"github.com/marcin-mc/find-index/internal/service"
 	"github.com/spf13/viper"
 )
 
@@ -20,29 +20,29 @@ var wg sync.WaitGroup
 
 func main() {
 	wg.Add(1)
-	if err := Run(server.DataFilepath); err != nil {
+	if err := run(service.DataFilepath); err != nil {
 		panic(err)
 	}
 	wg.Wait()
 }
 
-func Run(dataFilepath string) error {
+func run(dataFilepath string) error {
 	viper.AddConfigPath(".")
 	viper.SetDefault("port", defaultPort)
 	viper.SetDefault("log_level", defaultLogLevel)
 	if err := readConfig(); err != nil {
 		slog.Info("There was problem using confing file. Default values will apply.")
 	}
-	logger := GetLogger()
+	logger := getLogger()
 	if viper.Get("log_level") != "DEBUG" {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	srv, err := server.NewServer(logger, dataFilepath)
+	srv, err := service.NewServer(logger, dataFilepath)
 	if err != nil {
 		return fmt.Errorf("cannot start server: %w", err)
 	}
 	go func() {
-		if err := srv.Serve(dataFilepath); err != nil {
+		if err := srv.Serve(); err != nil {
 			panic(err)
 		}
 	}()
@@ -60,7 +60,7 @@ func readConfig() error {
 	return nil
 }
 
-func GetLogger() *slog.Logger {
+func getLogger() *slog.Logger {
 	logLevel := viper.GetString("log_level")
 	var slogLevel slog.Level
 	switch logLevel {
