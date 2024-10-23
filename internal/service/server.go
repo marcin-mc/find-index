@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// DataFilepath is where the data input file is.
 const DataFilepath = "./data/input.txt"
 
 type Server struct {
